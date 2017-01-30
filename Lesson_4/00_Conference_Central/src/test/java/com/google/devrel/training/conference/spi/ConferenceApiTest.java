@@ -14,8 +14,12 @@ import com.google.devrel.training.conference.form.ProfileForm;
 import com.google.devrel.training.conference.form.ProfileForm.TeeShirtSize;
 import com.googlecode.objectify.Key;
 
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.cache.AsyncCacheFilter;
+import com.googlecode.objectify.util.Closeable;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.text.DateFormat;
@@ -46,6 +50,7 @@ public class ConferenceApiTest {
     private static final int MONTH = 3;
 
     private static final int CAP = 500;
+    protected Closeable session;
 
     private User user;
 
@@ -55,16 +60,24 @@ public class ConferenceApiTest {
             new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()
                     .setDefaultHighRepJobPolicyUnappliedJobPercentage(100));
 
+    @BeforeClass
+    public static void setUpClass() {
+        ObjectifyService.register(Profile.class);
+    }
+
     @Before
     public void setUp() throws Exception {
         helper.setUp();
         user = new User(EMAIL, "gmail.com", USER_ID);
         conferenceApi = new ConferenceApi();
+        session = ObjectifyService.begin();
     }
 
     @After
     public void tearDown() throws Exception {
+        AsyncCacheFilter.complete();
         ofy().clear();
+        session.close();
         helper.tearDown();
     }
 
