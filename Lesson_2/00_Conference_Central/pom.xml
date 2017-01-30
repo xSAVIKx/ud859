@@ -10,11 +10,11 @@
     <artifactId>conference</artifactId>
 
     <properties>
+        <appengine.app.version>2</appengine.app.version>
         <junit.version>4.12</junit.version>
         <javax.inject.version>1</javax.inject.version>
         <servlet-api.version>2.5</servlet-api.version>
         <objectify.version>5.1.14</objectify.version>
-        <appengine.app.version>1</appengine.app.version>
         <appengine.target.version>1.9.4</appengine.target.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

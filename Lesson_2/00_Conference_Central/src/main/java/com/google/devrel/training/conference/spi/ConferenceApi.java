@@ -16,8 +16,8 @@ import com.googlecode.objectify.Key;
 /**
  * Defines conference APIs.
  */
-@Api(name = "conference", version = "v1", scopes = { Constants.EMAIL_SCOPE }, clientIds = {
-        Constants.WEB_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID }, description = "API for the Conference Central Backend application.")
+@Api(name = "conference", version = "v1", scopes = {Constants.EMAIL_SCOPE}, clientIds = {
+        Constants.WEB_CLIENT_ID, Constants.API_EXPLORER_CLIENT_ID}, description = "API for the Conference Central Backend application.")
 public class ConferenceApi {
 
     /*
@@ -32,13 +32,10 @@ public class ConferenceApi {
      * Creates or updates a Profile object associated with the given user
      * object.
      *
-     * @param user
-     *            A User object injected by the cloud endpoints.
-     * @param profileForm
-     *            A ProfileForm object sent from the client form.
+     * @param user        A User object injected by the cloud endpoints.
+     * @param profileForm A ProfileForm object sent from the client form.
      * @return Profile object just created.
-     * @throws UnauthorizedException
-     *             when the User object is null.
+     * @throws UnauthorizedException when the User object is null.
      */
 
     // Declare this method as a method available externally through Endpoints
@@ -48,31 +45,41 @@ public class ConferenceApi {
 
     // TODO 1 Pass the ProfileForm parameter
     // TODO 2 Pass the User parameter
-    public Profile saveProfile() throws UnauthorizedException {
+    public Profile saveProfile(final User user, ProfileForm profileForm) throws UnauthorizedException {
 
         String userId = null;
         String mainEmail = null;
-        String displayName = "Your name will go here";
+        String displayName = null;
         TeeShirtSize teeShirtSize = TeeShirtSize.NOT_SPECIFIED;
 
         // TODO 2
         // If the user is not logged in, throw an UnauthorizedException
+        if (user == null) {
+            throw new UnauthorizedException("Authorization required");
+        }
 
         // TODO 1
         // Set the teeShirtSize to the value sent by the ProfileForm, if sent
         // otherwise leave it as the default value
-
+        if (profileForm.getTeeShirtSize() != null) {
+            teeShirtSize = profileForm.getTeeShirtSize();
+        }
         // TODO 1
         // Set the displayName to the value sent by the ProfileForm, if sent
         // otherwise set it to null
-
+        if (profileForm.getDisplayName() != null) {
+            displayName = profileForm.getDisplayName();
+        }
         // TODO 2
         // Get the userId and mainEmail
-
+        userId = user.getUserId();
+        mainEmail = user.getEmail();
         // TODO 2
         // If the displayName is null, set it to default value based on the user's email
         // by calling extractDefaultDisplayNameFromEmail(...)
-
+        if (displayName == null) {
+            displayName = extractDefaultDisplayNameFromEmail(user.getEmail());
+        }
         // Create a new Profile entity from the
         // userId, displayName, mainEmail and teeShirtSize
         Profile profile = new Profile(userId, displayName, mainEmail, teeShirtSize);
@@ -88,11 +95,9 @@ public class ConferenceApi {
      * Returns a Profile object associated with the given user object. The cloud
      * endpoints system automatically inject the User object.
      *
-     * @param user
-     *            A User object injected by the cloud endpoints.
+     * @param user A User object injected by the cloud endpoints.
      * @return Profile object.
-     * @throws UnauthorizedException
-     *             when the User object is null.
+     * @throws UnauthorizedException when the User object is null.
      */
     @ApiMethod(name = "getProfile", path = "profile", httpMethod = HttpMethod.GET)
     public Profile getProfile(final User user) throws UnauthorizedException {
