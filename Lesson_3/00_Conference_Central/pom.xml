@@ -10,7 +10,7 @@
     <artifactId>conference</artifactId>
 
     <properties>
-        <appengine.app.version>1</appengine.app.version>
+        <appengine.app.version>3</appengine.app.version>
         <junit.version>4.12</junit.version>
         <javax.inject.version>1</javax.inject.version>
         <servlet-api.version>2.5</servlet-api.version>
