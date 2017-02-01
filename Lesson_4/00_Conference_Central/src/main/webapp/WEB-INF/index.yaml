@@ -1,0 +1,7 @@
+indexes:
+  - kind: Conference
+    ancestor: yes
+    properties:
+      - name: name
+      - name: city=
+      - name: topics=

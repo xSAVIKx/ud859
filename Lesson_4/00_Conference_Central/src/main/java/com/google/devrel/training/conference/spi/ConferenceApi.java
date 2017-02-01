@@ -3,8 +3,7 @@ package com.google.devrel.training.conference.spi;
 import static com.google.devrel.training.conference.service.OfyService.factory;
 import static com.google.devrel.training.conference.service.OfyService.ofy;
 
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.*;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.users.User;
@@ -15,6 +14,9 @@ import com.google.devrel.training.conference.form.ConferenceForm;
 import com.google.devrel.training.conference.form.ProfileForm;
 import com.google.devrel.training.conference.form.ProfileForm.TeeShirtSize;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.cmd.Query;
+
+import java.util.List;
 
 /**
  * Defines conference APIs.
@@ -49,9 +51,7 @@ public class ConferenceApi {
             throws UnauthorizedException {
 
         // If the user is not logged in, throw an UnauthorizedException
-        if (user == null) {
-            throw new UnauthorizedException("Authorization required");
-        }
+        validateUser(user);
 
         // Get the userId and mainEmail
         String mainEmail = user.getEmail();
@@ -102,9 +102,7 @@ public class ConferenceApi {
      */
     @ApiMethod(name = "getProfile", path = "profile", httpMethod = HttpMethod.GET)
     public Profile getProfile(final User user) throws UnauthorizedException {
-        if (user == null) {
-            throw new UnauthorizedException("Authorization required");
-        }
+        validateUser(user);
 
         // TODO
         // load the Profile Entity
@@ -147,9 +145,7 @@ public class ConferenceApi {
     @ApiMethod(name = "createConference", path = "conference", httpMethod = HttpMethod.POST)
     public Conference createConference(final User user, final ConferenceForm conferenceForm)
             throws UnauthorizedException {
-        if (user == null) {
-            throw new UnauthorizedException("Authorization required");
-        }
+        validateUser(user);
 
         // Get the userId of the logged in User
         String userId = user.getUserId();
@@ -178,4 +174,42 @@ public class ConferenceApi {
         return conference;
     }
 
+    @ApiMethod(
+            name = "queryConferences",
+            path = "queryConferences",
+            httpMethod = HttpMethod.POST
+    )
+    public List<Conference> queryConferences() {
+        Query<Conference> query = ofy().load().type(Conference.class).order("name");
+        return query.list();
+    }
+
+    @ApiMethod(
+            name = "getConferencesCreated",
+            path = "getConferencesCreated",
+            httpMethod = HttpMethod.POST
+    )
+    public List<Conference> getConferencesCreated(User user) throws UnauthorizedException {
+        validateUser(user);
+        Query<Conference> query = ofy().load().type(Conference.class).ancestor(Key.create(Profile.class, user.getUserId())).order("name");
+        return query.list();
+    }
+
+    private void validateUser(User user) throws UnauthorizedException {
+        if (user == null) {
+            throw new UnauthorizedException("Authorization required");
+        }
+    }
+
+    @ApiMethod(
+            name = "filter",
+            path = "filter",
+            httpMethod = HttpMethod.POST
+    )
+    public List<Conference> filter(@Nullable @DefaultValue("London") @Named("city") String city, @Nullable @DefaultValue("Medical Innovations") @Named("topic") String topic) {
+        Query<Conference> query = ofy().load().type(Conference.class).order("name")
+                .filter("city=", city)
+                .filter("topics=", topic);
+        return query.list();
+    }
 }
